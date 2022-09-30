@@ -1,7 +1,8 @@
 import { Play } from "phosphor-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { CountdownContainer, FormContainer, HomeContainer, Separator, StartCountdownButton, TaskInput, TaskInputAmount } from "./styles";
+import {differenceInSeconds} from 'date-fns';
 
 interface NewCycleFormData{
     task: string,
@@ -11,7 +12,8 @@ interface NewCycleFormData{
 interface Cycle{
     id: string,
     task: string,
-    minutesAmount: number
+    minutesAmount: number,
+    startDate: Date
 }
 
 export function Home() {
@@ -41,18 +43,42 @@ export function Home() {
     const minutes = String(minutesAmount).padStart(2, '0')
     const seconds = String(secondsAmount).padStart(2, '0')
 
+    useEffect(() => {
+
+        let interval: number;
+
+      if(activeCycle){
+      interval = setInterval(() => {
+            setAmountSecondsPassed(differenceInSeconds(new Date(), activeCycle.startDate))
+        }, 1000)
+      }
+
+      return () => {
+        clearInterval(interval)
+      }
+    }, [activeCycle])
+    
+
     function handleSubmitForm(data: NewCycleFormData){
         const newCycle: Cycle = {
             id: String(new Date().getTime()),
             task: data.task,
             minutesAmount: data.minutesAmount,
+            startDate: new Date()
         }
 
         setCycles(state => [...state, newCycle])
         setActiveCycleId(newCycle.id)
+        setAmountSecondsPassed(0)
 
         reset();
     }
+
+    useEffect(() => {
+        if(activeCycle){
+            document.title = `${minutes}:${seconds}`
+        }
+    }, [minutes, seconds, activeCycle])
     
     return (
         <HomeContainer>
