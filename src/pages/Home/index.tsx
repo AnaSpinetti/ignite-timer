@@ -1,57 +1,54 @@
-import { Play, Stop } from "phosphor-react";
-import { Countdown } from "./components/Countdown";
+import { HandPalm, Play } from 'phosphor-react'
 import { FormProvider, useForm } from 'react-hook-form'
-import { useContext } from "react";
-import { NewCycleForm } from "./components/NewCycleForm";
-import { CyclesContext } from "../../contexts/CyclesContext";
-import { HomeContainer, StartCountdownButton, StopCountdownButton } from "./styles";
+import { useContext } from 'react'
 
-interface NewCycleFormData {
-    task: string,
-    minutesAmount: number
-}
+import { HomeContainer, StartCountdownButton, StopCountdownButton } from './styles'
+import { NewCycleForm } from './components/NewCycleForm'
+import { Countdown } from './components/Countdown'
+import { CyclesContext } from '../../contexts/CyclesContext'
+
 
 export function Home() {
-    const { createNewCycle, interruptCurrentCycle, activeCycle } = useContext(CyclesContext)
-    const newCycleForm = useForm<NewCycleFormData>({
-        defaultValues: {
-            task: '',
-            minutesAmount: 0
-        }
-    });
+  const { activeCycle, createNewCycle, interruptCurrentCycle } =
+    useContext(CyclesContext)
 
-    const { handleSubmit, watch, reset } = newCycleForm
+  const newCycleForm = useForm({
+    defaultValues: {
+      task: '',
+      minutesAmount: 0,
+    },
+  })
 
+  const { handleSubmit, watch, reset } = newCycleForm
 
-    function handleCreateNewCycle(data: NewCycleFormData) {
-        createNewCycle(data)
-        reset()
-    }
+  function handleCreateNewCycle(data: any) {
+    createNewCycle(data)
+    reset()
+  }
 
-    // Verificando se tem valor no input de task para habilitar o botão de submit
-    const task = watch('task')
+  const task = watch('task')
+  const isSubmitDisable = !task
 
-    return (
-        <HomeContainer>
-            <form onSubmit={handleSubmit(handleCreateNewCycle)}>
+  return (
+    <HomeContainer>
+      <form onSubmit={handleSubmit(handleCreateNewCycle)}>
+        <FormProvider {...newCycleForm}>
+          <NewCycleForm />
+        </FormProvider>
+        <Countdown />
 
-                <FormProvider {...newCycleForm}>
-                    <NewCycleForm />
-                </FormProvider>
-                <Countdown />
-
-                {activeCycle ? (
-                    <StopCountdownButton onClick={interruptCurrentCycle} type="button">
-                        <Stop size={24} />
-                        Parar
-                    </StopCountdownButton>
-                ) : (
-                    <StartCountdownButton disabled={!task} type="submit">
-                        <Play size={24} />
-                        Começar
-                    </StartCountdownButton>
-                )}
-            </form>
-        </HomeContainer>
-    )
+        {activeCycle ? (
+          <StopCountdownButton onClick={interruptCurrentCycle} type="button">
+            <HandPalm size={24} />
+            Interromper
+          </StopCountdownButton>
+        ) : (
+          <StartCountdownButton disabled={isSubmitDisable} type="submit">
+            <Play size={24} />
+            Começar
+          </StartCountdownButton>
+        )}
+      </form>
+    </HomeContainer>
+  )
 }
